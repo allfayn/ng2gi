@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {AccountOptionsService} from '../../services/account-options.service';
 import {ActivatedRoute} from '@angular/router';
 import {FormBuilder, FormControl, FormGroup} from '@angular/forms';
+import {Subscription} from 'rxjs/Subscription';
 
 interface FormField {
   type: string;
@@ -18,11 +19,12 @@ interface FormField {
   templateUrl: './index.component.html',
   styleUrls: ['./index.component.css']
 })
-export class IndexComponent implements OnInit {
+export class IndexComponent implements OnInit, OnDestroy {
   public readonly: Boolean = false;
   public form: FormGroup;
   public formFields: Array<FormField> = [];
   public errorMessage: string;
+  public sub$: Subscription;
 
   constructor(
     private accountOptionsService: AccountOptionsService,
@@ -33,10 +35,8 @@ export class IndexComponent implements OnInit {
 
   ngOnInit() {
     this.form = this.formBuilder.group({});
-    this.route.data.subscribe((params: any) => {
-      this.readonly = params['readonly'];
-    });
-    this.accountOptionsService.getData().subscribe(data => {
+    this.readonly = this.route.snapshot.data['readonly'];
+    this.sub$ = this.accountOptionsService.getData().subscribe(data => {
       if (data.errorMessage && data.errorCode !== 0) {
          this.errorMessage = data.errorMessage;
       } else {
@@ -108,8 +108,12 @@ export class IndexComponent implements OnInit {
     );
   }
 
-  onClear(){
+  onClear() {
     this.accountOptionsService.sync();
+  }
+
+  ngOnDestroy() {
+    this.sub$.unsubscribe();
   }
 
 }
