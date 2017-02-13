@@ -1,0 +1,45 @@
+<nav>
+  <a routerLink="/" routerLinkActive="active" *ngIf="readonly">Writable</a>
+  <a routerLink="/readonly" routerLinkActive="active" *ngIf="!readonly">Readonly</a>
+</nav>
+<form (ngSubmit)="onSubmit()" [formGroup]="form">
+  <div  class="alert alert-danger" *ngIf="errorMessage">{{errorMessage}}</div>
+  <div *ngFor="let group of formFields">
+    <div class="form-group form-group-{{group.type}}" *ngIf="group.type=='dropdown'||group.type=='text'">
+      <label>
+        <span>{{group.label}}</span>
+      </label>
+      <div class="input-wrap">
+        <input *ngIf="group.type=='text'"
+               [attr.disabled]="group.readonly"
+               formControlName="{{group.name}}"
+               type="text" class="form-control"/>
+        <select *ngIf="group.type=='dropdown'&&!group.multiple"
+                [attr.disabled]="group.readonly"
+                formControlName="{{group.name}}"
+                class="form-control">
+          <option *ngFor="let option of group.options" [value]="option.id">{{option.label}}</option>
+        </select>
+        <select *ngIf="group.type=='dropdown'&&group.multiple"
+                [attr.disabled]="group.readonly"
+                multiple
+                formControlName="{{group.name}}"
+                class="form-control">
+          <option *ngFor="let option of group.options" [value]="option.id">{{option.label}}</option>
+        </select>
+      </div>
+    </div>
+    <div class="checkbox" *ngIf="group.type=='checkbox'">
+      <label>
+        <input formControlName="{{group.name}}"
+               [attr.disabled]="group.readonly"
+               type="checkbox">
+        {{group.label}}
+      </label>
+    </div>
+  </div>
+  <div class="btn-group pull-right" *ngIf="!(!formFields.length||readonly)">
+    <a type="submit" class="btn btn-default" (click)="onClear()">Clear</a>
+    <button type="submit" class="btn btn-success">Save</button>
+  </div>
+</form>
